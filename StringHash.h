@@ -16,7 +16,6 @@ private:
 		}
 		return hash;
 	}
-
 	int h2(string k) const override
 	{
 		unsigned long long int hash = 0;
