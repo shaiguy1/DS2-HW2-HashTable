@@ -113,6 +113,7 @@ bool HashTable<K, T>::insert(K key, T data)
 	{
 		index = hash(key, collisions);
 		// we can only inssert if the cell is marked as empty or if the cell is marked as deleted
+		// cout << "DEBUGGING LINE: Attempting to insert key: " << key << " at index: " << index << " with collision count: " << collisions << endl;
 		if (table[index].flag == EMPTY || table[index].flag == DELETED)
 		{
 			// we found a valid slot for insertion
@@ -197,9 +198,13 @@ void HashTable<K, T>::print() const
 		{
 			cout << i << ":\t" << table[i].key << '\n';
 		}
-		if (table[i].flag == DELETED)
+		else if (table[i].flag == DELETED)
 		{
 			cout << i << ":\t" << "DELETED" << '\n';
+		}
+		else // for debugging
+		{
+			// cout << ""DEBUGGING LINE: " << i << ":\tEMPTY\n";
 		}
 	}
 }
