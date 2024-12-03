@@ -5,6 +5,13 @@
 
 using namespace std;
 
+enum tableStatus
+{
+	TABLE_NOT_FULL,
+	TABLE_FULL
+};
+
+
 enum state
 {
 	EMPTY,
@@ -22,17 +29,17 @@ protected:
 		T data;					 // The value
 		K key;					 // The key
 		state flag;				 // Describes the state of the cell
-		Item() { flag = EMPTY; } // Initialization
-		Item(K k, T d)
-		{
-			data = d;
-			key = k;
-			flag = FULL;
-		}
+		Item() : key(K()), data(T()), flag(EMPTY) {}		// Initialization
+		Item(K k, T d) : key(k), data(d), flag(FULL) {}
 	};
 
 	int size;
 	Item *table;
+	tableStatus status;
+
+	// methods to track the "fullness" status of the table
+	virtual void tableState(tableStatus state);
+	tableStatus getTableState();
 
 	// pure virtual hash functions
 	virtual int h1(K k) const = 0;
@@ -89,7 +96,26 @@ HashTable<K, T>::HashTable(int m)
 		// set all flags within the array (table, whatever) to empty
 		table[i].flag = EMPTY;
 	}
+	// set the table status to TABLE_NOT_FULL to indicate that the table is 
+	status = (tableStatus)TABLE_NOT_FULL;
+
 }
+
+template <class K, class T>
+void HashTable<K, T>::tableState(tableStatus state)
+{
+	// set the table state
+	status = (tableStatus)state;
+}
+
+template <class K, class T>
+tableStatus HashTable<K, T>::getTableState()
+{
+	// pretty self explanitory
+	return status;
+}
+
+
 
 template <class K, class T>
 HashTable<K, T>::~HashTable()
@@ -109,11 +135,15 @@ bool HashTable<K, T>::insert(K key, T data)
 {
 	int collisions = 0;
 	int index;
-	do
+/*	if (getTableState() == TABLE_FULL)
+	{
+		throw ("table is full");
+		// prevent attempting to insert into a full table
+	}
+*/	do
 	{
 		index = hash(key, collisions);
 		// we can only inssert if the cell is marked as empty or if the cell is marked as deleted
-		// cout << "DEBUGGING LINE: Attempting to insert key: " << key << " at index: " << index << " with collision count: " << collisions << endl;
 		if (table[index].flag == EMPTY || table[index].flag == DELETED)
 		{
 			// we found a valid slot for insertion
@@ -126,6 +156,7 @@ bool HashTable<K, T>::insert(K key, T data)
 		}
 		// what happens we find a slot that has the same key as the key we're trying to insert?
 		// update the data
+		// are we sure we want to update the data?
 		else if (table[index].key == key)
 		{
 			table[index].data = data;
@@ -135,8 +166,10 @@ bool HashTable<K, T>::insert(K key, T data)
 		++collisions;
 	} while (collisions < size);
 	// if we have as many collisions as we do size, then we will start looping
+
+	tableState((tableStatus)TABLE_FULL);
 	return false;
-	// failed the insertion, do nothing, be sad, get wrecked, drink water
+	// failed the insertion, do nothing, be sad, get wrecked, drink cement
 }
 
 template <class K, class T>
@@ -182,6 +215,11 @@ bool HashTable<K, T>::remove(K key)
 		{
 			// found a thing that matched the thing wooooo
 			table[index].flag = DELETED;
+			if (getTableState() == TABLE_FULL)
+			{
+				tableState((tableStatus)TABLE_NOT_FULL);
+				// if the table was formerly full= tis not anymore
+			}
 			return true;
 		}
 		++collisions;
@@ -198,13 +236,9 @@ void HashTable<K, T>::print() const
 		{
 			cout << i << ":\t" << table[i].key << '\n';
 		}
-		else if (table[i].flag == DELETED)
+		if (table[i].flag == DELETED)
 		{
 			cout << i << ":\t" << "DELETED" << '\n';
-		}
-		else // for debugging
-		{
-			// cout << ""DEBUGGING LINE: " << i << ":\tEMPTY\n";
 		}
 	}
 }
