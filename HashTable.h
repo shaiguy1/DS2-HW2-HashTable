@@ -52,7 +52,7 @@ protected:
 
 	// methods to track the "fullness" status of the table
 	virtual void setTableStatus(tableStatus stat);		// SG set the table status
-	virtual tableStatus getTableStatus();						// SG get the table status
+	virtual tableStatus getTableStatus() const;						// SG get the table status
 
 	// pure virtual hash functions
 	virtual int h1(K k) const = 0;
@@ -135,7 +135,7 @@ void HashTable<K, T>::setTableStatus(tableStatus stat)
 }
 
 template <class K, class T>
-tableStatus HashTable<K, T>::getTableStatus()
+tableStatus HashTable<K, T>::getTableStatus() const
 {
 	// pretty self explanitory
 	return status;
