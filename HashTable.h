@@ -1,6 +1,8 @@
 #pragma once
 #include <iostream>
 #include <stdexcept>
+#include <cmath>
+#include <string>
 #include "PrimeUtil.h" // for the prime-->getNextPrime method
 
 using namespace std;
@@ -50,24 +52,12 @@ protected:
 	tableStatus status; // SG tableStatus to hold the status of the table (full or not full) SG
 
 	// methods to track the "fullness" status of the table
-	virtual void setTableStatus(tableStatus state) { this->status = state; }; // SG set the table status
+	virtual void setTableStatus(tableStatus stat) { this->status = stat; }; // SG set the table status
 	virtual tableStatus getTableStatus() const { return status; };			  // SG get the table status
 
 	// pure virtual hash functions
 	virtual int h1(K k) const = 0;
 	virtual int h2(K k) const = 0;
-
-	bool prime(int m) const
-	{
-		// cout << "IF YOU SEE THIS MESSAGE IT MEANS THAT PRIME FUNCTION IS BROKEN" << endl
-		//	 << "change the method in getNextPrime to use PrimeUtil.h's method\n";
-		for (int i = 2; i < (int)sqrt(m); i++)
-			if (m % i == 0)
-				return false;
-		return true;
-	}
-	// can't change PrimeUtil.h, so i'm expanding on it here
-	int getNextPrime(int m) const;
 
 public:
 	HashTable(int m = 10);
@@ -82,6 +72,18 @@ public:
 	bool remove(K key);
 
 	void print() const;
+
+	bool prime(int m) const
+	{
+		// cout << "IF YOU SEE THIS MESSAGE IT MEANS THAT PRIME FUNCTION IS BROKEN" << endl
+		//	 << "change the method in getNextPrime to use PrimeUtil.h's method\n";
+		for (int i = 2; i < (int)sqrt(m); i++)
+			if (m % i == 0)
+				return false;
+		return true;
+	}
+	// can't change PrimeUtil.h, so i'm expanding on it here
+	int getNextPrime(int m) const;
 };
 
 // implement getNextPrime
@@ -125,6 +127,8 @@ HashTable<K, T>::HashTable(int m)
 	// set the table status to TABLE_NOT_FULL to indicate that the table is not full
 	status = (tableStatus)TABLE_NOT_FULL;
 }
+
+template <class K, class T>
 
 template <class K, class T>
 HashTable<K, T>::~HashTable()
@@ -204,6 +208,11 @@ T HashTable<K, T>::search(K key) const
 	do
 	{
 		index = hash(key, collisions);
+		if (index > size)
+		{
+			// avoid accessing out of bounds
+			throw runtime_error("Index out of bounds - failed search");
+		}
 		// if we come accross a cell that has not been touched, aka empty, then we end our search since it can't be past here
 		if (table[index].flag == EMPTY)
 		{
@@ -230,6 +239,11 @@ bool HashTable<K, T>::remove(K key)
 	{
 		// this method uses the same type of searching as search method
 		index = hash(key, collisions);
+		if (index > size)
+		{
+			// avoid accessing out of bounds
+			throw runtime_error("Index out of bounds - failed remove");
+		}
 		if (table[index].flag == EMPTY)
 		{
 			// search landed on empty, nothing beyond, leave

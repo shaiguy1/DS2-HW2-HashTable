@@ -9,12 +9,21 @@ class StringHash : public HashTable<string, T>
 private:
 	int h1(string name) const override
 	{
-		// cout << name << endl;
-		int hash = 0;
-		auto temp = 0; // variables of type auto need an initializer
-		for (int i = 0; i < name.length(); ++i)
+		int length = name.length();
+		if (length <= 0)
 		{
-			temp = (int)name[i] * (pow(256, i));
+			throw runtime_error("Key is empty - failed StringHash::h1");
+		}
+		if (length > 8)
+		{
+			throw runtime_error("Key is too long - failed StringHash::h1");
+		}
+		// cout << name << endl;
+		unsigned long long int hash = 0;
+		unsigned long long int temp = 0;
+		for (int i = 0; i < length; ++i)
+		{
+			temp = (unsigned long long int)name[i] * ((unsigned long long int)pow(256, i));
 			hash += temp % (this->size);
 			// cout << (int)name[i] << "*256^" << i << "+";
 		}
