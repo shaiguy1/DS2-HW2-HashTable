@@ -11,13 +11,13 @@ private:
 	{
 		// cout << name << endl;
 		int hash = 0;
+		auto temp = 0; // variables of type auto need an initializer
 		for (int i = 0; i < name.length(); ++i)
 		{
-			hash += (int(name[i]) * int((pow(256, i))) % (this->size));
-			cout << int(name[i]) << "*256^" << i << "+";
+			temp = (int)name[i] * (pow(256, i));
+			hash += temp % (this->size);
+			// cout << (int)name[i] << "*256^" << i << "+";
 		}
-		// cout << "stringHash h1(" << name << ") = " << hash << endl;
-		// cout << (hash % (this->size)) << endl;
 		return (hash % (this->size));
 	}
 

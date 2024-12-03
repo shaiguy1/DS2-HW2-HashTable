@@ -19,12 +19,6 @@ enum state
 	DELETED
 };
 
-enum tableStatus // SG
-{
-	TABLE_NOT_FULL,
-	TABLE_FULL
-};
-
 template <class K, class T>
 class HashTable
 {
@@ -56,8 +50,8 @@ protected:
 	tableStatus status; // SG tableStatus to hold the status of the table (full or not full) SG
 
 	// methods to track the "fullness" status of the table
-	virtual void setTableStatus(tableStatus stat) { this->status = state; }; // SG set the table status
-	virtual tableStatus getTableStatus() const { return status; };			 // SG get the table status
+	virtual void setTableStatus(tableStatus state) { this->status = state; }; // SG set the table status
+	virtual tableStatus getTableStatus() const { return status; };			  // SG get the table status
 
 	// pure virtual hash functions
 	virtual int h1(K k) const = 0;
@@ -133,20 +127,6 @@ HashTable<K, T>::HashTable(int m)
 }
 
 template <class K, class T>
-void HashTable<K, T>::setTableStatus(tableStatus stat)
-{
-	// set the table status
-	status = (tableStatus)stat;
-}
-
-template <class K, class T>
-tableStatus HashTable<K, T>::getTableStatus() const
-{
-	// pretty self explanitory
-	return status;
-}
-
-template <class K, class T>
 HashTable<K, T>::~HashTable()
 {
 	delete[] table;
@@ -162,7 +142,7 @@ int HashTable<K, T>::hash(K key, int i) const
 		throw runtime_error("Invalid step value - failed hash");
 	}
 
-	return (h1(key) + i * h2(key)) % this->this->size;
+	return (h1(key) + i * h2(key)) % (this->size);
 }
 
 template <class K, class T>
