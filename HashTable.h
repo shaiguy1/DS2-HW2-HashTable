@@ -5,6 +5,13 @@
 
 using namespace std;
 
+// enum to track the status of the table
+enum tableStatus // SG
+{
+	TABLE_NOT_FULL,
+	TABLE_FULL
+};
+
 enum state
 {
 	EMPTY,
@@ -25,23 +32,32 @@ protected:
 	class Item
 	{
 	public:
-		T data;					 // The value
-		K key;					 // The key
-		state flag;				 // Describes the state of the cell
-		Item() { flag = EMPTY; } // Initialization
-		Item(K k, T d)
+		T data;		// The value
+		K key;		// The key
+		state flag; // Describes the state of the cell
+
+		Item() // default constructor for the empty default Item class
 		{
-			data = d;
+			key = K();	  // initialize the key to the default value of the key type
+			data = T();	  // initialize the data to the default value of the data type
+			flag = EMPTY; // set the flag to empty
+		}
+
+		Item(K k, T d) // constructor for the non-default Item class
+		{
 			key = k;
+			data = d;
 			flag = FULL;
 		}
 	};
 
-	int size;
-	Item *table;
-	tableStatus status;													  // SG
-	virtual void tableState(tableStatus state) { this->status = state; }; // SG
-	tableStatus getTableState() { return status; };						  // SG
+	int size;			// The size of the table
+	Item *table;		// The table, specifically a pointer to an array of Items
+	tableStatus status; // SG tableStatus to hold the status of the table (full or not full) SG
+
+	// methods to track the "fullness" status of the table
+	virtual void setTableStatus(tableStatus stat) { this->status = state; }; // SG set the table status
+	virtual tableStatus getTableStatus() const { return status; };			 // SG get the table status
 
 	// pure virtual hash functions
 	virtual int h1(K k) const = 0;
@@ -78,6 +94,11 @@ public:
 template <class K, class T>
 int HashTable<K, T>::getNextPrime(int m) const
 {
+	// if m is less than 1, return 1
+	if (m < 1)
+	{
+		return 1;
+	}
 	// so long as m is not prime
 	// while (!PrimeUtil::prime(m))
 	while (!prime(m))
@@ -90,17 +111,39 @@ int HashTable<K, T>::getNextPrime(int m) const
 template <class K, class T>
 HashTable<K, T>::HashTable(int m)
 {
-
+	// if the size is less than 1, throw an error and be sad
+	if (m < 1)
+	{
+		throw runtime_error("Invalid size for table - failed constructor");
+	}
 	size = getNextPrime(m);
 	table = new Item[size];
-	// cout << "\nthe size of the table is: " << size << endl;
-	// the table is the right size
+	if (table == nullptr)
+	{
+		throw runtime_error("Memory allocation failed - failed constructor");
+	}
 	// now have a dynamic array with correct size
 	for (int i = 0; i < size; ++i)
 	{
 		// set all flags within the array (table, whatever) to empty
 		table[i].flag = EMPTY;
 	}
+	// set the table status to TABLE_NOT_FULL to indicate that the table is not full
+	status = (tableStatus)TABLE_NOT_FULL;
+}
+
+template <class K, class T>
+void HashTable<K, T>::setTableStatus(tableStatus stat)
+{
+	// set the table status
+	status = (tableStatus)stat;
+}
+
+template <class K, class T>
+tableStatus HashTable<K, T>::getTableStatus() const
+{
+	// pretty self explanitory
+	return status;
 }
 
 template <class K, class T>
@@ -114,19 +157,34 @@ template <class K, class T>
 int HashTable<K, T>::hash(K key, int i) const
 {
 	// the 'i' comes from amount of collisions
-	return (h1(key) + i * h2(key)) % this->size;
+	if (i < 0)
+	{
+		throw runtime_error("Invalid step value - failed hash");
+	}
+
+	return (h1(key) + i * h2(key)) % this->this->size;
 }
 
 template <class K, class T>
 bool HashTable<K, T>::insert(K key, T data)
 {
-	int collisions = 0;
-	int index;
+	// prevent attempting to insert into a full table
+	if (getTableStatus() == TABLE_FULL)
+	{
+		throw runtime_error("Table is full - failed insert");
+	}
+
+	int collisions = 0, index = 0; // initialize collisions and index to 0 to avoid garbage values
+
 	do
 	{
 		index = hash(key, collisions);
+		if (index > size)
+		{
+			// avoid accessing out of bounds
+			throw runtime_error("Index out of bounds - failed insert");
+		}
 		// we can only inssert if the cell is marked as empty or if the cell is marked as deleted
-		// cout << "DEBUGGING LINE: Attempting to insert key: " << key << " at index: " << index << " with collision count: " << collisions << endl;
 		if (table[index].flag == EMPTY || table[index].flag == DELETED)
 		{
 			// we found a valid slot for insertion
@@ -140,6 +198,7 @@ bool HashTable<K, T>::insert(K key, T data)
 		}
 		// what happens we find a slot that has the same key as the key we're trying to insert?
 		// update the data
+		// are we sure we want to update the data?
 		else if (table[index].key == key)
 		{
 			table[index].data = data;
@@ -151,15 +210,17 @@ bool HashTable<K, T>::insert(K key, T data)
 	} while (collisions < size);
 	// cout << "failed to insert key: " << key << " with " << collisions << " collisions" << endl; // Debug print for failed insertion
 	// if we have as many collisions as we do size, then we will start looping
+
+	setTableStatus((tableStatus)TABLE_FULL);
 	return false;
-	// failed the insertion, do nothing, be sad, get wrecked, drink water
+	// failed the insertion, do nothing, be sad, get wrecked, drink cement
 }
 
 template <class K, class T>
 T HashTable<K, T>::search(K key) const
 {
-	int collisions = 0;
-	int index;
+	int collisions = 0, index = 0; // initialize collisions and index to 0 to avoid garbage values
+
 	do
 	{
 		index = hash(key, collisions);
@@ -167,7 +228,7 @@ T HashTable<K, T>::search(K key) const
 		if (table[index].flag == EMPTY)
 		{
 			// yeet
-			throw runtime_error("Key does not exist in table");
+			throw runtime_error("Key does not exist in table - failed search");
 		}
 		// if there's something in that cell and it has the right key (garbage value are lame)
 		else if (table[index].flag == FULL && table[index].key == key)
@@ -177,31 +238,37 @@ T HashTable<K, T>::search(K key) const
 		++collisions;
 	} while (collisions < size);
 	// more yeet
-	throw runtime_error("Key does not exist in table");
+	throw runtime_error("Key does not exist in table - failed search");
 }
 
 template <class K, class T>
 bool HashTable<K, T>::remove(K key)
 {
-	int collisions = 0;
-	int index;
+	int collisions = 0, index = 0; // initialize collisions and index to 0 to avoid garbage values
+
 	do
 	{
 		// this method uses the same type of searching as search method
 		index = hash(key, collisions);
 		if (table[index].flag == EMPTY)
 		{
-			// search, landed on empty, nothing beyond, leave
+			// search landed on empty, nothing beyond, leave
 			return false;
 		}
 		else if (table[index].flag == FULL && table[index].key == key)
 		{
 			// found a thing that matched the thing wooooo
 			table[index].flag = DELETED;
+			if (getTableStatus() == TABLE_FULL)
+			{
+				// if the table was formerly full- tis not anymore
+				setTableStatus((tableStatus)TABLE_NOT_FULL);
+			}
 			return true;
 		}
 		++collisions;
 	} while (collisions < size);
+
 	return false;
 }
 
@@ -214,13 +281,9 @@ void HashTable<K, T>::print() const
 		{
 			cout << i << ":\t" << table[i].key << '\n';
 		}
-		else if (table[i].flag == DELETED)
+		if (table[i].flag == DELETED)
 		{
 			cout << i << ":\t" << "DELETED" << '\n';
-		}
-		else // for debugging
-		{
-			// cout << ""DEBUGGING LINE: " << i << ":\tEMPTY\n";
 		}
 	}
 }
