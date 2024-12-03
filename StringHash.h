@@ -9,6 +9,10 @@ class StringHash : public HashTable<string, T>
 private:
 	int h1(string k) const override
 	{
+		if (k.length() <= 0)
+		{
+			throw runtime_error("Key is empty - failed StringHash::h1");
+		}
 		unsigned long long int hash = 0;
 		for (int i = 0; i < k.length(); ++i)
 		{
@@ -25,8 +29,17 @@ private:
 	}
 	int h2(string k) const override
 	{
+		int length = k.length();
+		if (length <= 0)
+		{
+			throw runtime_error("Key is empty - failed StringHash::h2");
+		}
+		if (length > 8)
+		{
+			throw runtime_error("Key is too long - failed StringHash::h2");
+		}
 		unsigned long long int hash = 0;
-		for (int i = 0; i < k.length(); ++i)
+		for (int i = 0; i < length; ++i)
 		{
 			hash = (hash * 256 + k[i]) % (this->size - 1);
 		}
