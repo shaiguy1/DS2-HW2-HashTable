@@ -7,23 +7,23 @@ template <class T>
 class StringHash : public HashTable<string, T>
 {
 private:
-	int h1(string k) const override
+	int h1(string name) const override
 	{
-		unsigned long long int hash = 0;
-		for (int i = 0; i < k.length(); ++i)
+		// cout << name << endl;
+		int hash = 0;
+		for (int i = 0; i < name.length(); ++i)
 		{
-			hash = (hash * 256 + k[i]) % this->size;
+			hash += (int(name[i]) * int((pow(256, i))) % (this->size));
+			cout << int(name[i]) << "*256^" << i << "+";
 		}
-		return hash;
+		// cout << "stringHash h1(" << name << ") = " << hash << endl;
+		// cout << (hash % (this->size)) << endl;
+		return (hash % (this->size));
 	}
-	int h2(string k) const override
+
+	int h2(string name) const override
 	{
-		unsigned long long int hash = 0;
-		for (int i = 0; i < k.length(); ++i)
-		{
-			hash = (hash * 256 + k[i]) % (this->size - 1);
-		}
-		return 1 + (hash % (this->size - 1));
+		return 1;
 	}
 
 public:

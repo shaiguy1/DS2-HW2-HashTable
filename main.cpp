@@ -29,6 +29,22 @@ void menu()
     cout << "7 - to print the names of the courses that a particular student is studying\n";
     cout << "8 - to print the students' table\n";
     cout << "9 - to print the courses' table\n";
+    /*
+    input for test case 5 with the long names
+20
+20
+1
+cs
+76
+3
+Zrubavel
+3
+Eliyahu
+8
+9
+0
+
+    */
 }
 int main()
 {

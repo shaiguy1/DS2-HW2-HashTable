@@ -12,6 +12,12 @@ enum state
 	DELETED
 };
 
+enum tableStatus // SG
+{
+	TABLE_NOT_FULL,
+	TABLE_FULL
+};
+
 template <class K, class T>
 class HashTable
 {
@@ -33,6 +39,9 @@ protected:
 
 	int size;
 	Item *table;
+	tableStatus status;													  // SG
+	virtual void tableState(tableStatus state) { this->status = state; }; // SG
+	tableStatus getTableState() { return status; };						  // SG
 
 	// pure virtual hash functions
 	virtual int h1(K k) const = 0;
@@ -81,8 +90,11 @@ int HashTable<K, T>::getNextPrime(int m) const
 template <class K, class T>
 HashTable<K, T>::HashTable(int m)
 {
+
 	size = getNextPrime(m);
 	table = new Item[size];
+	// cout << "\nthe size of the table is: " << size << endl;
+	// the table is the right size
 	// now have a dynamic array with correct size
 	for (int i = 0; i < size; ++i)
 	{
@@ -99,9 +111,10 @@ HashTable<K, T>::~HashTable()
 
 // double hash function
 template <class K, class T>
-int HashTable<K, T>::hash(K k, int i) const
+int HashTable<K, T>::hash(K key, int i) const
 {
-	return ((h1(k) + (i * h2(k))) % size);
+	// the 'i' comes from amount of collisions
+	return (h1(key) + i * h2(key)) % this->size;
 }
 
 template <class K, class T>
@@ -122,6 +135,7 @@ bool HashTable<K, T>::insert(K key, T data)
 			table[index] = Item(key, data);
 			table[index].flag = FULL;
 			// successfully inserted
+			// cout << "inserted key: " << key << " at index: " << index << endl; // Debug print for successful insertion
 			return true;
 		}
 		// what happens we find a slot that has the same key as the key we're trying to insert?
@@ -130,10 +144,12 @@ bool HashTable<K, T>::insert(K key, T data)
 		{
 			table[index].data = data;
 			// successfully updated
+			// cout << "updated the key: " << key << " at index: " << index << endl; // Debug print for successful update
 			return true;
 		}
 		++collisions;
 	} while (collisions < size);
+	// cout << "failed to insert key: " << key << " with " << collisions << " collisions" << endl; // Debug print for failed insertion
 	// if we have as many collisions as we do size, then we will start looping
 	return false;
 	// failed the insertion, do nothing, be sad, get wrecked, drink water
