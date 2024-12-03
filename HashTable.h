@@ -33,12 +33,12 @@ protected:
 		
 		Item()					// default constructor for the empty default Item class
 		{
-			flag = EMPTY;		// set the flag to empty
 			key = K();			// initialize the key to the default value of the key type
 			data = T();			// initialize the data to the default value of the data type
+			flag = EMPTY;		// set the flag to empty
 		}
 
-		Item(K k, T d)			// constructor for the filled Item class
+		Item(K k, T d)			// constructor for the non-default Item class
 		{
 			key = k;
 			data = d;
@@ -46,13 +46,13 @@ protected:
 		}
 	};
 
-	int size;
-	Item *table;
+	int size;					// The size of the table
+	Item* table;				// The table, specifically a pointer to an array of Items
 	tableStatus status;			// SG tableStatus to hold the status of the table (full or not full) SG
 
 	// methods to track the "fullness" status of the table
-	virtual void tableState(tableStatus state);		// SG set the table state
-	tableStatus getTableState();					// SG get the table state
+	virtual void setTableStatus(tableStatus stat);		// SG set the table status
+	virtual tableStatus getTableStatus();						// SG get the table status
 
 	// pure virtual hash functions
 	virtual int h1(K k) const = 0;
@@ -89,6 +89,11 @@ public:
 template <class K, class T>
 int HashTable<K, T>::getNextPrime(int m) const
 {
+	// if m is less than 1, return 1
+	if (m < 1)
+	{
+		return 1;
+	}
 	// so long as m is not prime
 	// while (!PrimeUtil::prime(m))
 	while (!prime(m))
@@ -100,29 +105,37 @@ int HashTable<K, T>::getNextPrime(int m) const
 
 template <class K, class T>
 HashTable<K, T>::HashTable(int m)
-{
+{	
+	// if the size is less than 1, throw an error and be sad
+	if (m < 1)
+	{
+		throw runtime_error("Invalid size for table - failed constructor");
+	}
 	size = getNextPrime(m);
 	table = new Item[size];
+	if (table == nullptr)
+	{
+		throw runtime_error("Memory allocation failed - failed constructor");
+	}
 	// now have a dynamic array with correct size
 	for (int i = 0; i < size; ++i)
 	{
 		// set all flags within the array (table, whatever) to empty
 		table[i].flag = EMPTY;
 	}
-	// set the table status to TABLE_NOT_FULL to indicate that the table is 
+	// set the table status to TABLE_NOT_FULL to indicate that the table is not full
 	status = (tableStatus)TABLE_NOT_FULL;
-
 }
 
 template <class K, class T>
-void HashTable<K, T>::tableState(tableStatus state)
+void HashTable<K, T>::setTableStatus(tableStatus stat)
 {
-	// set the table state
-	status = (tableStatus)state;
+	// set the table status
+	status = (tableStatus)stat;
 }
 
 template <class K, class T>
-tableStatus HashTable<K, T>::getTableState()
+tableStatus HashTable<K, T>::getTableStatus()
 {
 	// pretty self explanitory
 	return status;
@@ -138,22 +151,33 @@ HashTable<K, T>::~HashTable()
 template <class K, class T>
 int HashTable<K, T>::hash(K k, int i) const
 {
+	if (i < 0)
+	{
+		throw runtime_error("Invalid step value - failed hash");
+	}
+
 	return ((h1(k) + (i * h2(k))) % this->size);
 }
 
 template <class K, class T>
 bool HashTable<K, T>::insert(K key, T data)
 {
-	int collisions = 0;
-	int index;
-/*	if (getTableState() == TABLE_FULL)
+	// prevent attempting to insert into a full table
+	if (getTableStatus() == TABLE_FULL)
 	{
-		throw ("table is full");
-		// prevent attempting to insert into a full table
+		throw runtime_error("Table is full - failed insert");
 	}
-*/	do
+
+	int collisions = 0, index = 0;		// initialize collisions and index to 0 to avoid garbage values
+	
+	do
 	{
 		index = hash(key, collisions);
+		if (index > size)
+		{
+			// avoid accessing out of bounds
+			throw runtime_error("Index out of bounds - failed insert");
+		}
 		// we can only inssert if the cell is marked as empty or if the cell is marked as deleted
 		if (table[index].flag == EMPTY || table[index].flag == DELETED)
 		{
@@ -178,7 +202,7 @@ bool HashTable<K, T>::insert(K key, T data)
 	} while (collisions < size);
 	// if we have as many collisions as we do size, then we will start looping
 
-	tableState((tableStatus)TABLE_FULL);
+	setTableStatus((tableStatus)TABLE_FULL);
 	return false;
 	// failed the insertion, do nothing, be sad, get wrecked, drink cement
 }
@@ -186,8 +210,8 @@ bool HashTable<K, T>::insert(K key, T data)
 template <class K, class T>
 T HashTable<K, T>::search(K key) const
 {
-	int collisions = 0;
-	int index;
+	int collisions = 0, index = 0;		// initialize collisions and index to 0 to avoid garbage values
+
 	do
 	{
 		index = hash(key, collisions);
@@ -195,7 +219,7 @@ T HashTable<K, T>::search(K key) const
 		if (table[index].flag == EMPTY)
 		{
 			// yeet
-			throw runtime_error("Key does not exist in table");
+			throw runtime_error("Key does not exist in table - failed search");
 		}
 		// if there's something in that cell and it has the right key (garbage value are lame)
 		else if (table[index].flag == FULL && table[index].key == key)
@@ -205,36 +229,37 @@ T HashTable<K, T>::search(K key) const
 		++collisions;
 	} while (collisions < size);
 	// more yeet
-	throw runtime_error("Key does not exist in table");
+	throw runtime_error("Key does not exist in table - failed search");
 }
 
 template <class K, class T>
 bool HashTable<K, T>::remove(K key)
 {
-	int collisions = 0;
-	int index;
+	int collisions = 0, index = 0;		// initialize collisions and index to 0 to avoid garbage values
+	
 	do
 	{
 		// this method uses the same type of searching as search method
 		index = hash(key, collisions);
 		if (table[index].flag == EMPTY)
 		{
-			// search, landed on empty, nothing beyond, leave
+			// search landed on empty, nothing beyond, leave
 			return false;
 		}
 		else if (table[index].flag == FULL && table[index].key == key)
 		{
 			// found a thing that matched the thing wooooo
 			table[index].flag = DELETED;
-			if (getTableState() == TABLE_FULL)
+			if (getTableStatus() == TABLE_FULL)
 			{
-				tableState((tableStatus)TABLE_NOT_FULL);
-				// if the table was formerly full= tis not anymore
+				// if the table was formerly full- tis not anymore
+				setTableStatus((tableStatus)TABLE_NOT_FULL);
 			}
 			return true;
 		}
 		++collisions;
 	} while (collisions < size);
+
 	return false;
 }
 
