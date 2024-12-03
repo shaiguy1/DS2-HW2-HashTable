@@ -8,7 +8,7 @@
 using namespace std;
 
 // enum to track the status of the table
-enum tableStatus		// SG
+enum tableStatus // SG
 {
 	TABLE_NOT_FULL,
 	TABLE_FULL
@@ -28,18 +28,18 @@ protected:
 	class Item
 	{
 	public:
-		T data;					// The value
-		K key;					// The key
-		state flag;				// Describes the state of the cell
-		
-		Item()					// default constructor for the empty default Item class
+		T data;		// The value
+		K key;		// The key
+		state flag; // Describes the state of the cell
+
+		Item() // default constructor for the empty default Item class
 		{
-			key = K();			// initialize the key to the default value of the key type
-			data = T();			// initialize the data to the default value of the data type
-			flag = EMPTY;		// set the flag to empty
+			key = K();	  // initialize the key to the default value of the key type
+			data = T();	  // initialize the data to the default value of the data type
+			flag = EMPTY; // set the flag to empty
 		}
 
-		Item(K k, T d)			// constructor for the non-default Item class
+		Item(K k, T d) // constructor for the non-default Item class
 		{
 			key = k;
 			data = d;
@@ -47,17 +47,17 @@ protected:
 		}
 	};
 
-	int size;					// The size of the table
-	Item* table;				// The table, specifically a pointer to an array of Items
-	tableStatus status;			// SG tableStatus to hold the status of the table (full or not full) SG
+	int size;			// The size of the table
+	Item *table;		// The table, specifically a pointer to an array of Items
+	tableStatus status; // SG tableStatus to hold the status of the table (full or not full) SG
+
+	// methods to track the "fullness" status of the table
+	virtual void setTableStatus(tableStatus stat) { this->status = stat; }; // SG set the table status
+	virtual tableStatus getTableStatus() const { return status; };			  // SG get the table status
 
 	// pure virtual hash functions
 	virtual int h1(K k) const = 0;
 	virtual int h2(K k) const = 0;
-
-	// methods to track the "fullness" status of the table
-	virtual void setTableStatus(tableStatus stat);		// SG set the table status
-	virtual tableStatus getTableStatus() const;			// SG get the table status
 
 public:
 	HashTable(int m = 10);
@@ -106,7 +106,7 @@ int HashTable<K, T>::getNextPrime(int m) const
 
 template <class K, class T>
 HashTable<K, T>::HashTable(int m)
-{	
+{
 	// if the size is less than 1, throw an error and be sad
 	if (m < 1)
 	{
@@ -129,18 +129,6 @@ HashTable<K, T>::HashTable(int m)
 }
 
 template <class K, class T>
-void HashTable<K, T>::setTableStatus(tableStatus stat)
-{
-	// set the table status
-	status = (tableStatus)stat;
-}
-
-template <class K, class T>
-tableStatus HashTable<K, T>::getTableStatus() const
-{
-	// pretty self explanitory
-	return (tableStatus)status;
-}
 
 template <class K, class T>
 HashTable<K, T>::~HashTable()
@@ -150,14 +138,15 @@ HashTable<K, T>::~HashTable()
 
 // double hash function
 template <class K, class T>
-int HashTable<K, T>::hash(K k, int i) const
+int HashTable<K, T>::hash(K key, int i) const
 {
+	// the 'i' comes from amount of collisions
 	if (i < 0)
 	{
 		throw runtime_error("Invalid step value - failed hash");
 	}
 
-	return ((h1(k) + (i * h2(k))) % this->size);
+	return (h1(key) + i * h2(key)) % (this->size);
 }
 
 template <class K, class T>
@@ -169,8 +158,8 @@ bool HashTable<K, T>::insert(K key, T data)
 		throw runtime_error("Table is full - failed insert");
 	}
 
-	int collisions = 0, index = 0;		// initialize collisions and index to 0 to avoid garbage values
-	
+	int collisions = 0, index = 0; // initialize collisions and index to 0 to avoid garbage values
+
 	do
 	{
 		index = hash(key, collisions);
@@ -188,6 +177,7 @@ bool HashTable<K, T>::insert(K key, T data)
 			table[index] = Item(key, data);
 			table[index].flag = FULL;
 			// successfully inserted
+			// cout << "inserted key: " << key << " at index: " << index << endl; // Debug print for successful insertion
 			return true;
 		}
 		// what happens we find a slot that has the same key as the key we're trying to insert?
@@ -197,10 +187,12 @@ bool HashTable<K, T>::insert(K key, T data)
 		{
 			table[index].data = data;
 			// successfully updated
+			// cout << "updated the key: " << key << " at index: " << index << endl; // Debug print for successful update
 			return true;
 		}
 		++collisions;
 	} while (collisions < size);
+	// cout << "failed to insert key: " << key << " with " << collisions << " collisions" << endl; // Debug print for failed insertion
 	// if we have as many collisions as we do size, then we will start looping
 
 	setTableStatus((tableStatus)TABLE_FULL);
@@ -211,7 +203,7 @@ bool HashTable<K, T>::insert(K key, T data)
 template <class K, class T>
 T HashTable<K, T>::search(K key) const
 {
-	int collisions = 0, index = 0;		// initialize collisions and index to 0 to avoid garbage values
+	int collisions = 0, index = 0; // initialize collisions and index to 0 to avoid garbage values
 
 	do
 	{
@@ -241,8 +233,8 @@ T HashTable<K, T>::search(K key) const
 template <class K, class T>
 bool HashTable<K, T>::remove(K key)
 {
-	int collisions = 0, index = 0;		// initialize collisions and index to 0 to avoid garbage values
-	
+	int collisions = 0, index = 0; // initialize collisions and index to 0 to avoid garbage values
+
 	do
 	{
 		// this method uses the same type of searching as search method

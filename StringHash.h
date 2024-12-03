@@ -7,43 +7,32 @@ template <class T>
 class StringHash : public HashTable<string, T>
 {
 private:
-	int h1(string k) const override
+	int h1(string name) const override
 	{
-		if (k.length() <= 0)
+		int length = name.length();
+		if (length <= 0)
 		{
 			throw runtime_error("Key is empty - failed StringHash::h1");
 		}
-		unsigned long long int hash = 0;
-		for (int i = 0; i < k.length(); ++i)
-		{
-			hash = (hash * 256 + k[i]) % this->size;
-		}
-		/*
-  		Should it not be?:
-  SG  		for (int i = 1; i <= k.length(); i++) {
-			power = (unsigned long long)pow(256, (i - 1)) % this->size;
-			sum += (k[i - 1] * power) % this->size;
-   		??????????????????????? idk bro
-		 */
-		return hash;
-	}
-	int h2(string k) const override
-	{
-		int length = k.length();
-		if (length <= 0)
-		{
-			throw runtime_error("Key is empty - failed StringHash::h2");
-		}
 		if (length > 8)
 		{
-			throw runtime_error("Key is too long - failed StringHash::h2");
+			throw runtime_error("Key is too long - failed StringHash::h1");
 		}
+		// cout << name << endl;
 		unsigned long long int hash = 0;
+		unsigned long long int temp = 0;
 		for (int i = 0; i < length; ++i)
 		{
-			hash = (hash * 256 + k[i]) % (this->size - 1);
+			temp = (unsigned long long int)name[i] * ((unsigned long long int)pow(256, i));
+			hash += temp % (this->size);
+			// cout << (int)name[i] << "*256^" << i << "+";
 		}
-		return 1 + (hash % (this->size - 1));
+		return (hash % (this->size));
+	}
+
+	int h2(string name) const override
+	{
+		return 1;
 	}
 
 public:
