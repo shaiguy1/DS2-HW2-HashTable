@@ -48,7 +48,7 @@ protected:
 	};
 
 	int size;			// The size of the table
-	Item *table;		// The table, specifically a pointer to an array of Items
+	Item* table;		// The table, specifically a pointer to an array of Items
 	tableStatus status; // SG tableStatus to hold the status of the table (full or not full) SG
 
 	// methods to track the "fullness" status of the table
@@ -66,10 +66,10 @@ public:
 	// double hash function
 	int hash(K k, int i) const;
 
-	// declaration of the functions insert, search and remove
+	// declaration of the functions insert, remove and search
 	bool insert(K key, T data);
-	T search(K key) const;
 	bool remove(K key);
+	T search(K key) const;
 
 	void print() const;
 
