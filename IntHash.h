@@ -10,6 +10,7 @@ private:
 	{
 		return (k % this->size);
 	}
+
 	int h2(int k) const override
 	{
 		return (1 + (k % (this->size - 1)));
