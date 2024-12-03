@@ -16,7 +16,7 @@ private:
 		}
 		/*
   		Should it not be?:
-    		for (int i = 1; i <= k.length(); i++) {
+  SG  		for (int i = 1; i <= k.length(); i++) {
 			power = (unsigned long long)pow(256, (i - 1)) % this->size;
 			sum += (k[i - 1] * power) % this->size;
    		??????????????????????? idk bro

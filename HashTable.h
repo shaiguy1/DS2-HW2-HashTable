@@ -5,7 +5,8 @@
 
 using namespace std;
 
-enum tableStatus
+// enum to track the status of the table
+enum tableStatus		// SG
 {
 	TABLE_NOT_FULL,
 	TABLE_FULL
@@ -26,20 +27,32 @@ protected:
 	class Item
 	{
 	public:
-		T data;					 // The value
-		K key;					 // The key
-		state flag;				 // Describes the state of the cell
-		Item() : key(K()), data(T()), flag(EMPTY) {}		// Initialization
-		Item(K k, T d) : key(k), data(d), flag(FULL) {}
+		T data;					// The value
+		K key;					// The key
+		state flag;				// Describes the state of the cell
+		
+		Item()					// default constructor for the empty default Item class
+		{
+			flag = EMPTY;		// set the flag to empty
+			key = K();			// initialize the key to the default value of the key type
+			data = T();			// initialize the data to the default value of the data type
+		}
+
+		Item(K k, T d)			// constructor for the filled Item class
+		{
+			key = k;
+			data = d;
+			flag = FULL;
+		}
 	};
 
 	int size;
 	Item *table;
-	tableStatus status;
+	tableStatus status;			// SG tableStatus to hold the status of the table (full or not full) SG
 
 	// methods to track the "fullness" status of the table
-	virtual void tableState(tableStatus state);
-	tableStatus getTableState();
+	virtual void tableState(tableStatus state);		// SG set the table state
+	tableStatus getTableState();					// SG get the table state
 
 	// pure virtual hash functions
 	virtual int h1(K k) const = 0;
@@ -115,8 +128,6 @@ tableStatus HashTable<K, T>::getTableState()
 	return status;
 }
 
-
-
 template <class K, class T>
 HashTable<K, T>::~HashTable()
 {
@@ -127,7 +138,7 @@ HashTable<K, T>::~HashTable()
 template <class K, class T>
 int HashTable<K, T>::hash(K k, int i) const
 {
-	return ((h1(k) + (i * h2(k))) % size);
+	return ((h1(k) + (i * h2(k))) % this->size);
 }
 
 template <class K, class T>
