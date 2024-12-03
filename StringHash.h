@@ -14,6 +14,13 @@ private:
 		{
 			hash = (hash * 256 + k[i]) % this->size;
 		}
+		/*
+  		Should it not be?:
+    		for (int i = 1; i <= k.length(); i++) {
+			power = (unsigned long long)pow(256, (i - 1)) % this->size;
+			sum += (k[i - 1] * power) % this->size;
+   		??????????????????????? idk bro
+		 */
 		return hash;
 	}
 	int h2(string k) const override
