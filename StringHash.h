@@ -2,22 +2,31 @@
 #include "HashTable.h"
 #include <string>
 using namespace std;
-
 template <class T>
 class StringHash : public HashTable<string, T>
 {
 private:
 	int h1(string name) const override
 	{
-		// cout << name << endl;
-		int hash = 0;
-		auto temp = 0; // variables of type auto need an initializer
-		for (int i = 0; i < name.length(); ++i)
+		int length = name.length();
+		if (length <= 0)
 		{
-			temp = (int)name[i] * (pow(256, i));
-			hash += temp % (this->size);
-			// cout << (int)name[i] << "*256^" << i << "+";
+			throw("Key is empty - failed StringHash::h1");
 		}
+		if (length > 8)
+		{
+			throw("Key is too long - failed StringHash::h1");
+		}
+		unsigned long long int hash = 0;
+		unsigned long long int temp = 0; // NEEDED THIS TO PASS TEST CASE 5
+		for (int i = 0; i < length; ++i)
+		{
+			// cout << name[i]; // << "*256^" << i << "+";
+			temp = (unsigned long long int)name[i] * ((unsigned long long int)pow(256, i));
+			hash += temp % (this->size);
+		}
+
+		// cout << endl;
 		return (hash % (this->size));
 	}
 
@@ -47,7 +56,7 @@ public:
 //     {
 //         cout << "Value for key 'Name1': " << hashTable.search("Name1") << endl;
 //     }
-//     catch (const runtime_error &e)
+//     catch (const &e)
 //     {
 //         cout << e.what() << endl;
 //     }
