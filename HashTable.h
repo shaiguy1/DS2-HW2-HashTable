@@ -48,12 +48,12 @@ protected:
 	};
 
 	int size;			// The size of the table
-	Item* table;		// The table, specifically a pointer to an array of Items
+	Item *table;		// The table, specifically a pointer to an array of Items
 	tableStatus status; // SG tableStatus to hold the status of the table (full or not full) SG
 
 	// methods to track the "fullness" status of the table
 	virtual void setTableStatus(tableStatus stat) { this->status = stat; }; // SG set the table status
-	virtual tableStatus getTableStatus() const { return status; };			  // SG get the table status
+	virtual tableStatus getTableStatus() const { return status; };			// SG get the table status
 
 	// pure virtual hash functions
 	virtual int h1(K k) const = 0;
@@ -73,16 +73,6 @@ public:
 
 	void print() const;
 
-	bool prime(int m) const
-	{
-		// cout << "IF YOU SEE THIS MESSAGE IT MEANS THAT PRIME FUNCTION IS BROKEN" << endl
-		//	 << "change the method in getNextPrime to use PrimeUtil.h's method\n";
-		for (int i = 2; i < (int)sqrt(m); i++)
-			if (m % i == 0)
-				return false;
-		return true;
-	}
-	// can't change PrimeUtil.h, so i'm expanding on it here
 	int getNextPrime(int m) const;
 };
 
@@ -96,8 +86,7 @@ int HashTable<K, T>::getNextPrime(int m) const
 		return 1;
 	}
 	// so long as m is not prime
-	// while (!PrimeUtil::prime(m))
-	while (!prime(m))
+	while (!PrimeUtil::prime(m))
 	{
 		++m;
 	}
@@ -127,8 +116,6 @@ HashTable<K, T>::HashTable(int m)
 	// set the table status to TABLE_NOT_FULL to indicate that the table is not full
 	status = (tableStatus)TABLE_NOT_FULL;
 }
-
-template <class K, class T>
 
 template <class K, class T>
 HashTable<K, T>::~HashTable()
