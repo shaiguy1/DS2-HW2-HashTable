@@ -2,7 +2,6 @@
 #include "HashTable.h"
 #include <string>
 using namespace std;
-
 template <class T>
 class StringHash : public HashTable<string, T>
 {
@@ -12,21 +11,21 @@ private:
 		int length = name.length();
 		if (length <= 0)
 		{
-			throw runtime_error("Key is empty - failed StringHash::h1");
+			throw("Key is empty - failed StringHash::h1");
 		}
 		if (length > 8)
 		{
-			throw runtime_error("Key is too long - failed StringHash::h1");
+			throw("Key is too long - failed StringHash::h1");
 		}
-		// cout << name << endl;
 		unsigned long long int hash = 0;
-		unsigned long long int temp = 0;
+		unsigned long long int temp = 0; // NEEDED THIS TO PASS TEST CASE 5
 		for (int i = 0; i < length; ++i)
 		{
-			temp = (unsigned long long int)name[i] * ((unsigned long long int)pow(256, i));
+			temp = (int)name[i] * (pow(256, i));
 			hash += temp % (this->size);
-			// cout << (int)name[i] << "*256^" << i << "+";
 		}
+
+		// cout << endl;
 		return (hash % (this->size));
 	}
 
@@ -56,7 +55,7 @@ public:
 //     {
 //         cout << "Value for key 'Name1': " << hashTable.search("Name1") << endl;
 //     }
-//     catch (const runtime_error &e)
+//     catch (const &e)
 //     {
 //         cout << e.what() << endl;
 //     }

@@ -110,13 +110,13 @@ HashTable<K, T>::HashTable(int m)
 	// if the size is less than 1, throw an error and be sad
 	if (m < 1)
 	{
-		throw runtime_error("Invalid size for table - failed constructor");
+		throw("Invalid size for table - failed constructor");
 	}
 	size = getNextPrime(m);
 	table = new Item[size];
 	if (table == nullptr)
 	{
-		throw runtime_error("Memory allocation failed - failed constructor");
+		throw("Memory allocation failed - failed constructor");
 	}
 	// now have a dynamic array with correct size
 	for (int i = 0; i < size; ++i)
@@ -143,7 +143,7 @@ int HashTable<K, T>::hash(K key, int i) const
 	// the 'i' comes from amount of collisions
 	if (i < 0)
 	{
-		throw runtime_error("Invalid step value - failed hash");
+		throw("Invalid step value - failed hash");
 	}
 
 	return (h1(key) + i * h2(key)) % (this->size);
@@ -155,7 +155,7 @@ bool HashTable<K, T>::insert(K key, T data)
 	// prevent attempting to insert into a full table
 	if (getTableStatus() == TABLE_FULL)
 	{
-		throw runtime_error("Table is full - failed insert");
+		throw("Table is full - failed insert");
 	}
 
 	int collisions = 0, index = 0; // initialize collisions and index to 0 to avoid garbage values
@@ -166,7 +166,7 @@ bool HashTable<K, T>::insert(K key, T data)
 		if (index > size)
 		{
 			// avoid accessing out of bounds
-			throw runtime_error("Index out of bounds - failed insert");
+			throw("Index out of bounds - failed insert");
 		}
 		// we can only inssert if the cell is marked as empty or if the cell is marked as deleted
 		if (table[index].flag == EMPTY || table[index].flag == DELETED)
@@ -217,7 +217,7 @@ T HashTable<K, T>::search(K key) const
 		if (table[index].flag == EMPTY)
 		{
 			// yeet
-			throw runtime_error("Key does not exist in table - failed search");
+			throw("Key does not exist in table"); // the throw should not be of type , also should not include " - failed search"
 		}
 		// if there's something in that cell and it has the right key (garbage value are lame)
 		else if (table[index].flag == FULL && table[index].key == key)
@@ -227,7 +227,7 @@ T HashTable<K, T>::search(K key) const
 		++collisions;
 	} while (collisions < size);
 	// more yeet
-	throw runtime_error("Key does not exist in table - failed search");
+	throw("Key does not exist in table"); // the throw should not be of type , also should not include " - failed search"
 }
 
 template <class K, class T>

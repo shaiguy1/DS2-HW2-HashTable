@@ -36,7 +36,7 @@ public:
 //     {
 //         cout << "Value for key 2: " << hashTable.search(2) << endl;
 //     }
-//     catch (const runtime_error &e)
+//     catch (const &e)
 //     {
 //         cout << e.what() << endl;
 //     }
