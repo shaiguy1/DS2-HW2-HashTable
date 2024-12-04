@@ -21,8 +21,7 @@ private:
 		unsigned long long int temp = 0; // NEEDED THIS TO PASS TEST CASE 5
 		for (int i = 0; i < length; ++i)
 		{
-			// cout << name[i]; // << "*256^" << i << "+";
-			temp = (unsigned long long int)name[i] * ((unsigned long long int)pow(256, i));
+			temp = (int)name[i] * (pow(256, i));
 			hash += temp % (this->size);
 		}
 
