@@ -30,6 +30,7 @@ private:
 		return (hash % (this->size));
 	}
 
+
 	int h2(string name) const override
 	{
 		return 1;
